@@ -288,12 +288,12 @@ static uint16_t ADC_ReadChannel(uint32_t channel)
     return (uint16_t)ADC1->DR;
 }
 
-void Joystick_Read(uint16_t *x, uint16_t *y, uint8_t *pressed)
-{
-    *x = ADC_ReadChannel(JOY_X_CHANNEL);
-    *y = ADC_ReadChannel(JOY_Y_CHANNEL);
-    *pressed = ((JOY_GPIO->IDR & (1 << JOY_BTN_PIN)) == 0);
-}
+// void Joystick_Read(uint16_t *x, uint16_t *y, uint8_t *pressed)
+// {
+//     *x = ADC_ReadChannel(JOY_X_CHANNEL);
+//     *y = ADC_ReadChannel(JOY_Y_CHANNEL);
+//     *pressed = ((JOY_GPIO->IDR & (1 << JOY_BTN_PIN)) == 0);
+// }
 
 // ----------------------------------------------------
 // LCD base functions
@@ -440,72 +440,72 @@ void gpio_pullup(GPIO_TypeDef *port, uint8_t pin) {
 
 }
 
-void Joystick_Test(void)
-{
-    uint16_t x = 0, y = 0;
-    uint8_t pressed = 0;
-    char s[8];
+// void Joystick_Test(void)
+// {
+//     uint16_t x = 0, y = 0;
+//     uint8_t pressed = 0;
+//     char s[8];
 
-    // Clear a small area for the test UI
-    LCD_FillColor(COLOR_BLACK);
-    LCD_DrawString(10, 6, "Joystick Test", COLOR_YELLOW, COLOR_BLACK, 2);
+//     // Clear a small area for the test UI
+//     LCD_FillColor(COLOR_BLACK);
+//     LCD_DrawString(10, 6, "Joystick Test", COLOR_YELLOW, COLOR_BLACK, 2);
 
-    while (1) {
-        Joystick_Read(&x, &y, &pressed);
+//     while (1) {
+//         Joystick_Read(&x, &y, &pressed);
 
-        // Draw X value
-        LCD_FillRect(10, 40, 100, 18, COLOR_BLACK);
-        u16_to_str(x, s);
-        LCD_DrawString(10, 40, "X:", COLOR_WHITE, COLOR_BLACK, 2);
-        LCD_DrawString(36, 40, s, COLOR_WHITE, COLOR_BLACK, 2);
+//         // Draw X value
+//         LCD_FillRect(10, 40, 100, 18, COLOR_BLACK);
+//         u16_to_str(x, s);
+//         LCD_DrawString(10, 40, "X:", COLOR_WHITE, COLOR_BLACK, 2);
+//         LCD_DrawString(36, 40, s, COLOR_WHITE, COLOR_BLACK, 2);
 
-        // Draw Y value
-        LCD_FillRect(10, 64, 100, 18, COLOR_BLACK);
-        u16_to_str(y, s);
-        LCD_DrawString(10, 64, "Y:", COLOR_WHITE, COLOR_BLACK, 2);
-        LCD_DrawString(36, 64, s, COLOR_WHITE, COLOR_BLACK, 2);
+//         // Draw Y value
+//         LCD_FillRect(10, 64, 100, 18, COLOR_BLACK);
+//         u16_to_str(y, s);
+//         LCD_DrawString(10, 64, "Y:", COLOR_WHITE, COLOR_BLACK, 2);
+//         LCD_DrawString(36, 64, s, COLOR_WHITE, COLOR_BLACK, 2);
 
-        // Draw button state
-        LCD_FillRect(10, 92, 180, 20, COLOR_BLACK);
-        if (pressed) LCD_DrawString(10, 92, "Button: PRESSED", COLOR_YELLOW, COLOR_BLACK, 2);
-        else LCD_DrawString(10, 92, "Button: released", COLOR_WHITE, COLOR_BLACK, 2);
+//         // Draw button state
+//         LCD_FillRect(10, 92, 180, 20, COLOR_BLACK);
+//         if (pressed) LCD_DrawString(10, 92, "Button: PRESSED", COLOR_YELLOW, COLOR_BLACK, 2);
+//         else LCD_DrawString(10, 92, "Button: released", COLOR_WHITE, COLOR_BLACK, 2);
 
-        if (x > y && x > 3000) {
-            Motor_Step(AXIS_X, DIR_FORWARD, 10);
-        }
-        if (y > x && y > 3000) {
-            Motor_Step(AXIS_Y, DIR_FORWARD, 10);
-        }
+//         if (x > y && x > 3000) {
+//             Motor_Step(AXIS_X, DIR_FORWARD, 10);
+//         }
+//         if (y > x && y > 3000) {
+//             Motor_Step(AXIS_Y, DIR_FORWARD, 10);
+//         }
 
-        delay_ms(1);
-    }
-}
+//         delay_ms(1);
+//     }
+// }
 
-void Joystick_and_Motor_Test(void)
-{
-    uint16_t x = 0, y = 0;
-    uint8_t pressed = 0;
+// void Joystick_and_Motor_Test(void)
+// {
+//     uint16_t x = 0, y = 0;
+//     uint8_t pressed = 0;
 
-    // while (1) {
-        Joystick_Read(&x, &y, &pressed);
+//     // while (1) {
+//         Joystick_Read(&x, &y, &pressed);
 
-        if (x > y && x > 3000) {
-            Motor_Step(AXIS_X, DIR_FORWARD, 10);
-        }
-        else if (y > x && y > 3000) {
-            Motor_Step(AXIS_Y, DIR_FORWARD, 10);
-        }
-        else if (x < y && x < 1500) {
-            Motor_Step(AXIS_X, DIR_BACKWARD, 10);
-        }
-        else if (y < x && y < 1500) {
-            Motor_Step(AXIS_Y, DIR_BACKWARD, 10);
-        }
+//         if (x > y && x > 3000) {
+//             Motor_Step(AXIS_X, DIR_FORWARD, 10);
+//         }
+//         else if (y > x && y > 3000) {
+//             Motor_Step(AXIS_Y, DIR_FORWARD, 10);
+//         }
+//         else if (x < y && x < 1500) {
+//             Motor_Step(AXIS_X, DIR_BACKWARD, 10);
+//         }
+//         else if (y < x && y < 1500) {
+//             Motor_Step(AXIS_Y, DIR_BACKWARD, 10);
+//         }
         
 
-        // delay_ms(0.001);
-    // }
-}
+//         // delay_ms(0.001);
+//     // }
+// }
 
 static cell_state_t TCS_ClassifySensor(uint8_t sensor_index)
 {
@@ -565,11 +565,11 @@ int main(void)
     SPI1_Init();
     SysTick_Init();
     LCD_Init();
-    Joystick_ADC_Init();
+    //Joystick_ADC_Init();
     TCS_Init();
-    Motor_Init();
+   // Motor_Init();
 
-    Game_Init();
+    //Game_Init();
     tim3_init();
 
     uint16_t time_left = 60;
@@ -585,26 +585,22 @@ int main(void)
     gpio_pullup(GPIOA, 10);
 
     delay_ms(20);
-    Motor_Enable();
+    //Motor_Enable();
     delay_ms(20);
-    char s[8];
+    //char s[8];
+
 
     while (1) {
-        Joystick_and_Motor_Test();
-        // Motor_MoveXZ(1,1000);
-        if (count_flag) {
+        //Joystick_and_Motor_Test();
+        cell_state_t state = TCS_ClassifySensor(0);
 
-            count_flag = 0;
-            if (time_left > 0) {
-                time_left--;
-            }
-            else {
-                time_left = 60;
-            }
-            u16_to_str(time_left, s);
-            // LCD_FillRect(10, 64, 100, 18, COLOR_BLACK);
-            LCD_DrawString(10, 100, s, COLOR_BLACK, COLOR_WHITE, 4);
-            
+        const char *slabel = "";
+        if (state == CELL_EMPTY) slabel = "EMPTY";
+        else if (state == CELL_PLAYER1_RED) slabel = "PLAYER 1 (RED)";
+        else if (state == CELL_PLAYER2_BLUE) slabel = "PLAYER 2 (BLUE)";
+        else slabel = "UNKNOWN";
+
+        LCD_FillRect(10, 230, 220, 24, COLOR_BLACK);
+        LCD_DrawString(10, 230, (char*)slabel, COLOR_YELLOW, COLOR_BLACK, 2);
         }
     }
-}

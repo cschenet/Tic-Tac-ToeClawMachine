@@ -4,28 +4,11 @@
 #include <stdint.h>
 #include "stm32f0xx.h"
 
-// -----------------------------------------------------------------------------
-// Microstepping mode (set by A1/A2/A3 on DRV8825)
-// If those pins are hardwired on the PCB, set this to match.
-// DRV8825 mode table:
-//   MODE_FULL       = M0=0 M1=0 M2=0  ->  1    step  per pulse
-//   MODE_HALF       = M0=1 M1=0 M2=0  ->  2    steps per pulse
-//   MODE_QUARTER    = M0=0 M1=1 M2=0  ->  4    steps per pulse
-//   MODE_EIGHTH     = M0=1 M1=1 M2=0  ->  8    steps per pulse
-//   MODE_SIXTEENTH  = M0=0 M1=0 M2=1  ->  16   steps per pulse
-//   MODE_THIRTYTWO  = M0=1 M1=0 M2=1  ->  32   steps per pulse
-// -----------------------------------------------------------------------------
-#define MICROSTEP_DIVISOR   1     // Change to match your hardware wiring
 
-// Steps per revolution of your motors (200 is standard for 1.8 deg/step motors)
-// Multiply by MICROSTEP_DIVISOR to get pulses per revolution.
-#define MOTOR_STEPS_PER_REV 200
-
-// Default step pulse width in microseconds (DRV8825 min is 1.9us, use 5 to be safe)
+// Pulse length, 5 us to be safe. Could be lowered if need be
 #define MOTOR_PULSE_US      5
 
-// Default step delay between pulses (controls speed, lower = faster)
-// 1000us = 1ms between steps, tune per axis
+// 1ms delay between stepping, raise or lower to slow down or speed up.
 #define MOTOR_STEP_DELAY_US 1000
 
 // -----------------------------------------------------------------------------

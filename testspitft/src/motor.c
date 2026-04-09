@@ -18,14 +18,14 @@ static void delay_us(uint32_t us)
 }
  
 // -----------------------------------------------------------------------------
-// Pin mapping — matches confirmed schematic
+// Pin mapping for PCB
 // -----------------------------------------------------------------------------
 //   AXIS_X    STEP=PA4  DIR=PC2
 //   AXIS_Y    STEP=PA3  DIR=PC1
 //   AXIS_Z    STEP=PC3  DIR=PC0
 //   AXIS_CLAW STEP=PC10 DIR=PA15
 //
-// Shared enable: PB9 (active LOW on DRV8825)
+// Shared enable: PB9 active low
 // -----------------------------------------------------------------------------
 #define MOTOR_EN_PORT   GPIOB
 #define MOTOR_EN_PIN    9
@@ -40,27 +40,26 @@ static const motor_pins_t motor_pins[AXIS_COUNT] = {
 // -----------------------------------------------------------------------------
 // Motor_Init
 // Configures all STEP, DIR, and EN pins as outputs.
-// Call after GPIO clocks have been enabled in GPIO_Init().
 // -----------------------------------------------------------------------------
 void Motor_Init(void)
 {
-    // Enable pin — PB9 output, start HIGH (disabled)
+    // Enable pin active low, so start high
     MOTOR_EN_PORT->MODER &= ~(3 << (MOTOR_EN_PIN * 2));
-    MOTOR_EN_PORT->MODER |=  (1 << (MOTOR_EN_PIN * 2));
-    MOTOR_EN_PORT->BSRR   =  (1 << MOTOR_EN_PIN);      // HIGH = disabled
+    MOTOR_EN_PORT->MODER |= (1 << (MOTOR_EN_PIN * 2));
+    MOTOR_EN_PORT->BSRR = (1 << MOTOR_EN_PIN);
  
     for (uint8_t i = 0; i < AXIS_COUNT; i++) {
         const motor_pins_t *p = &motor_pins[i];
  
-        // STEP pin — output, start low
+        // STEP pin always starts low
         p->step_port->MODER &= ~(3 << (p->step_pin * 2));
-        p->step_port->MODER |=  (1 << (p->step_pin * 2));
-        p->step_port->BRR    =  (1 << p->step_pin);
+        p->step_port->MODER |= (1 << (p->step_pin * 2));
+        p->step_port->BRR = (1 << p->step_pin);
  
-        // DIR pin — output, start low
+        // DIR pin always starts low
         p->dir_port->MODER &= ~(3 << (p->dir_pin * 2));
-        p->dir_port->MODER |=  (1 << (p->dir_pin * 2));
-        p->dir_port->BRR    =  (1 << p->dir_pin);
+        p->dir_port->MODER |= (1 << (p->dir_pin * 2));
+        p->dir_port->BRR = (1 << p->dir_pin);
     }
 }
  
@@ -71,12 +70,12 @@ void Motor_Init(void)
 // -----------------------------------------------------------------------------
 void Motor_Enable(void)
 {
-    MOTOR_EN_PORT->BRR  = (1 << MOTOR_EN_PIN);   // LOW = enabled
+    MOTOR_EN_PORT->BRR  = (1 << MOTOR_EN_PIN);
 }
  
 void Motor_Disable(void)
 {
-    MOTOR_EN_PORT->BSRR = (1 << MOTOR_EN_PIN);   // HIGH = disabled
+    MOTOR_EN_PORT->BSRR = (1 << MOTOR_EN_PIN); 
 }
  
 //Motor_Step, currently is blocking.
@@ -91,27 +90,26 @@ void Motor_Step2(axis_t axis1, axis_t axis2, motor_dir_t dir, uint32_t steps)
     const motor_pins_t *p2 = &motor_pins[axis2];
 
     if (dir == DIR_FORWARD) {
-    p2->dir_port->BSRR = (1 << p2->dir_pin);   // HIGH
+    p2->dir_port->BSRR = (1 << p2->dir_pin); 
     } else {
-    p2->dir_port->BRR  = (1 << p2->dir_pin);   // LOW
+    p2->dir_port->BRR  = (1 << p2->dir_pin);  
     }
         
     if (dir == DIR_FORWARD) {
-    p1->dir_port->BSRR = (1 << p1->dir_pin);   // HIGH
+    p1->dir_port->BSRR = (1 << p1->dir_pin);  
     } else {
-    p1->dir_port->BRR  = (1 << p1->dir_pin);   // LOW
+    p1->dir_port->BRR  = (1 << p1->dir_pin); 
     }
 
-    //delay for DRV8825 setup
     delay_us(2);
  
     for (uint32_t i = 0; i < steps; i++) {
-        // Pulse STEP high
+        
         p1->step_port->BSRR = (1 << p1->step_pin);
         p2->step_port->BSRR = (1 << p2->step_pin);
         delay_us(MOTOR_PULSE_US);
  
-        // Pulse STEP low
+        
         p1->step_port->BRR  = (1 << p1->step_pin);
 
         p2->step_port->BRR  = (1 << p2->step_pin);
@@ -122,26 +120,24 @@ void Motor_Step2(axis_t axis1, axis_t axis2, motor_dir_t dir, uint32_t steps)
 
 void Motor_Step(axis_t axis1, motor_dir_t dir, uint32_t steps)
 {
-    if (axis1 >= AXIS_COUNT || steps == 0) return;
- 
     const motor_pins_t *p = &motor_pins[axis1];
  
     //set direction
     if (dir == DIR_FORWARD) {
-        p->dir_port->BSRR = (1 << p->dir_pin);   // HIGH
+        p->dir_port->BSRR = (1 << p->dir_pin);  
     } else {
-        p->dir_port->BRR  = (1 << p->dir_pin);   // LOW
+        p->dir_port->BRR  = (1 << p->dir_pin);
     }
 
     //delay for DRV8825 setup
     delay_us(2);
  
     for (uint32_t i = 0; i < steps; i++) {
-        // Pulse STEP high
+        // Pulse step high
         p->step_port->BSRR = (1 << p->step_pin);
         delay_us(MOTOR_PULSE_US);
  
-        // Pulse STEP low
+        // Pulse step low
         p->step_port->BRR  = (1 << p->step_pin);
         delay_us(MOTOR_STEP_DELAY_US);
     }
