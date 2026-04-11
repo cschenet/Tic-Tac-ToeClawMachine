@@ -592,7 +592,28 @@ int main(void)
 
     while (1) {
         //Joystick_and_Motor_Test();
-        cell_state_t state = TCS_ClassifySensor(0);
+        uint32_t cR, cG, cB;
+        TCS_MeasureRawCounts_ForSensor(0,50,&cR,&cG,&cB);
+        cell_state_t state = classify_color_from_counts(cR,cG,cB);
+
+        char rStr[32],gStr[32], bStr[32];
+
+        LCD_FillRect(10,170,220,100, COLOR_BLACK);
+
+        LCD_DrawString(10,170, "R:", COLOR_WHITE,COLOR_BLACK,2);
+        char numBuf[16];
+        u16_to_str((uint16_t)cR, numBuf);
+        LCD_DrawString(36, 170, numBuf, COLOR_RED, COLOR_BLACK,2);
+
+        LCD_DrawString(10,194, "G:", COLOR_WHITE,COLOR_BLACK,2);
+        u16_to_str((uint16_t)cG, numBuf);
+        LCD_DrawString(36, 194, numBuf, COLOR_GREEN, COLOR_BLACK,2);
+
+        LCD_DrawString(10,218, "B:", COLOR_WHITE,COLOR_BLACK,2);
+        u16_to_str((uint16_t)cB, numBuf);
+        LCD_DrawString(36, 218, numBuf, COLOR_BLUE, COLOR_BLACK,2);
+
+
 
         const char *slabel = "";
         if (state == CELL_EMPTY) slabel = "EMPTY";
@@ -600,7 +621,7 @@ int main(void)
         else if (state == CELL_PLAYER2_BLUE) slabel = "PLAYER 2 (BLUE)";
         else slabel = "UNKNOWN";
 
-        LCD_FillRect(10, 230, 220, 24, COLOR_BLACK);
-        LCD_DrawString(10, 230, (char*)slabel, COLOR_YELLOW, COLOR_BLACK, 2);
+        LCD_FillRect(10, 242, 220, 24, COLOR_BLACK);
+        LCD_DrawString(10, 242, (char*)slabel, COLOR_YELLOW, COLOR_BLACK, 2);
         }
     }
