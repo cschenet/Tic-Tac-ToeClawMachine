@@ -288,12 +288,12 @@ static uint16_t ADC_ReadChannel(uint32_t channel)
     return (uint16_t)ADC1->DR;
 }
 
-// void Joystick_Read(uint16_t *x, uint16_t *y, uint8_t *pressed)
-// {
-//     *x = ADC_ReadChannel(JOY_X_CHANNEL);
-//     *y = ADC_ReadChannel(JOY_Y_CHANNEL);
-//     *pressed = ((JOY_GPIO->IDR & (1 << JOY_BTN_PIN)) == 0);
-// }
+void Joystick_Read(uint16_t *x, uint16_t *y, uint8_t *pressed)
+{
+    *x = ADC_ReadChannel(JOY_X_CHANNEL);
+    *y = ADC_ReadChannel(JOY_Y_CHANNEL);
+    *pressed = ((JOY_GPIO->IDR & (1 << JOY_BTN_PIN)) == 0);
+}
 
 // ----------------------------------------------------
 // LCD base functions
@@ -386,6 +386,8 @@ static void TCS_MeasureRawCounts_ForSensor(uint8_t sensor_index,
     GPIO_TypeDef *port = sensor_outputs[sensor_index].port;
     uint8_t pin = sensor_outputs[sensor_index].pin;
 
+    TCS_SetPin(TCS_LED_PIN, 1);
+
     // RED: S2=0, S3=0
     TCS_SetPin(TCS_S2_PIN, 0);
     TCS_SetPin(TCS_S3_PIN, 0);
@@ -440,46 +442,46 @@ void gpio_pullup(GPIO_TypeDef *port, uint8_t pin) {
 
 }
 
-// void Joystick_Test(void)
-// {
-//     uint16_t x = 0, y = 0;
-//     uint8_t pressed = 0;
-//     char s[8];
+void Joystick_Test(void)
+{
+    uint16_t x = 0, y = 0;
+    uint8_t pressed = 0;
+    char s[8];
 
-//     // Clear a small area for the test UI
-//     LCD_FillColor(COLOR_BLACK);
-//     LCD_DrawString(10, 6, "Joystick Test", COLOR_YELLOW, COLOR_BLACK, 2);
+    // Clear a small area for the test UI
+    LCD_FillColor(COLOR_BLACK);
+    LCD_DrawString(10, 6, "Joystick Test", COLOR_YELLOW, COLOR_BLACK, 2);
 
-//     while (1) {
-//         Joystick_Read(&x, &y, &pressed);
+    while (1) {
+        Joystick_Read(&x, &y, &pressed);
 
-//         // Draw X value
-//         LCD_FillRect(10, 40, 100, 18, COLOR_BLACK);
-//         u16_to_str(x, s);
-//         LCD_DrawString(10, 40, "X:", COLOR_WHITE, COLOR_BLACK, 2);
-//         LCD_DrawString(36, 40, s, COLOR_WHITE, COLOR_BLACK, 2);
+        // Draw X value
+        LCD_FillRect(10, 40, 100, 18, COLOR_BLACK);
+        u16_to_str(x, s);
+        LCD_DrawString(10, 40, "X:", COLOR_WHITE, COLOR_BLACK, 2);
+        LCD_DrawString(36, 40, s, COLOR_WHITE, COLOR_BLACK, 2);
 
-//         // Draw Y value
-//         LCD_FillRect(10, 64, 100, 18, COLOR_BLACK);
-//         u16_to_str(y, s);
-//         LCD_DrawString(10, 64, "Y:", COLOR_WHITE, COLOR_BLACK, 2);
-//         LCD_DrawString(36, 64, s, COLOR_WHITE, COLOR_BLACK, 2);
+        // Draw Y value
+        LCD_FillRect(10, 64, 100, 18, COLOR_BLACK);
+        u16_to_str(y, s);
+        LCD_DrawString(10, 64, "Y:", COLOR_WHITE, COLOR_BLACK, 2);
+        LCD_DrawString(36, 64, s, COLOR_WHITE, COLOR_BLACK, 2);
 
-//         // Draw button state
-//         LCD_FillRect(10, 92, 180, 20, COLOR_BLACK);
-//         if (pressed) LCD_DrawString(10, 92, "Button: PRESSED", COLOR_YELLOW, COLOR_BLACK, 2);
-//         else LCD_DrawString(10, 92, "Button: released", COLOR_WHITE, COLOR_BLACK, 2);
+        // Draw button state
+        // LCD_FillRect(10, 92, 180, 20, COLOR_BLACK);
+        // if (pressed) LCD_DrawString(10, 92, "Button: PRESSED", COLOR_YELLOW, COLOR_BLACK, 2);
+        // else LCD_DrawString(10, 92, "Button: released", COLOR_WHITE, COLOR_BLACK, 2);
 
-//         if (x > y && x > 3000) {
-//             Motor_Step(AXIS_X, DIR_FORWARD, 10);
-//         }
-//         if (y > x && y > 3000) {
-//             Motor_Step(AXIS_Y, DIR_FORWARD, 10);
-//         }
+        if (x > y && x > 3000) {
+            Motor_Step(AXIS_X, DIR_FORWARD, 10);
+        }
+        if (y > x && y > 3000) {
+            Motor_Step(AXIS_Y, DIR_FORWARD, 10);
+        }
 
-//         delay_ms(1);
-//     }
-// }
+        delay_ms(1);
+    }
+}
 
 // void Joystick_and_Motor_Test(void)
 // {
@@ -565,63 +567,49 @@ int main(void)
     SPI1_Init();
     SysTick_Init();
     LCD_Init();
-    //Joystick_ADC_Init();
+    Joystick_ADC_Init();
     TCS_Init();
-   // Motor_Init();
-
-    //Game_Init();
-    tim3_init();
-
-    uint16_t time_left = 60;
-
-
+    Motor_Init();
+    Motor_Enable();
     delay_ms(20);
-    gpio_pullup(GPIOB, 10);
-    gpio_pullup(GPIOB, 11);
-    gpio_pullup(GPIOB, 12);
 
-    gpio_pullup(GPIOA, 11);
-    gpio_pullup(GPIOA, 12);
-    gpio_pullup(GPIOA, 10);
+    Display_ShowPlayerTurn(PLAYER_1, 15000);
 
-    delay_ms(20);
-    //Motor_Enable();
-    delay_ms(20);
-    //char s[8];
+    uint32_t start = millis();
+    uint32_t last_seconds = 15;
+    uint32_t last_seconds2 = 15;
+    char s[8];
 
+    while ((millis() - start) < 15000) {
+        uint32_t elapsed = millis() - start;
+        uint32_t seconds = 15 - (elapsed / 1000);
 
-    while (1) {
-        //Joystick_and_Motor_Test();
-        uint32_t cR, cG, cB;
-        TCS_MeasureRawCounts_ForSensor(0,50,&cR,&cG,&cB);
-        cell_state_t state = classify_color_from_counts(cR,cG,cB);
+        if (seconds != last_seconds) {
+            last_seconds = seconds;
 
-        char rStr[32],gStr[32], bStr[32];
-
-        LCD_FillRect(10,170,220,100, COLOR_BLACK);
-
-        LCD_DrawString(10,170, "R:", COLOR_WHITE,COLOR_BLACK,2);
-        char numBuf[16];
-        u16_to_str((uint16_t)cR, numBuf);
-        LCD_DrawString(36, 170, numBuf, COLOR_RED, COLOR_BLACK,2);
-
-        LCD_DrawString(10,194, "G:", COLOR_WHITE,COLOR_BLACK,2);
-        u16_to_str((uint16_t)cG, numBuf);
-        LCD_DrawString(36, 194, numBuf, COLOR_GREEN, COLOR_BLACK,2);
-
-        LCD_DrawString(10,218, "B:", COLOR_WHITE,COLOR_BLACK,2);
-        u16_to_str((uint16_t)cB, numBuf);
-        LCD_DrawString(36, 218, numBuf, COLOR_BLUE, COLOR_BLACK,2);
-
-
-
-        const char *slabel = "";
-        if (state == CELL_EMPTY) slabel = "EMPTY";
-        else if (state == CELL_PLAYER1_RED) slabel = "PLAYER 1 (RED)";
-        else if (state == CELL_PLAYER2_BLUE) slabel = "PLAYER 2 (BLUE)";
-        else slabel = "UNKNOWN";
-
-        LCD_FillRect(10, 242, 220, 24, COLOR_BLACK);
-        LCD_DrawString(10, 242, (char*)slabel, COLOR_YELLOW, COLOR_BLACK, 2);
+            LCD_FillRect(140, 100, 40, 24, COLOR_BLACK);
+            u16_to_str((uint16_t)seconds, s);
+            LCD_DrawString(140, 100, s, COLOR_YELLOW, COLOR_BLACK, 3);
         }
     }
+
+    Display_ShowPlayerTurn(PLAYER_2, 15000);
+
+    uint32_t start2 = millis();
+
+    while ((millis() - start2) < 15000) {
+        uint32_t elapsed2 = millis() - start2;
+        uint32_t seconds2 = 15 - (elapsed2 / 1000);
+
+        if (seconds2 != last_seconds2) {
+            last_seconds2 = seconds2;
+
+            LCD_FillRect(140, 100, 40, 24, COLOR_BLACK);
+            u16_to_str((uint16_t)seconds2, s);
+            LCD_DrawString(140, 100, s, COLOR_YELLOW, COLOR_BLACK, 3);
+        }
+    }
+
+    while (1) {
+    }
+}
